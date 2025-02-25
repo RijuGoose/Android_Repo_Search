@@ -67,6 +67,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.paging.runtime.ktx)
+    implementation (libs.androidx.paging.compose)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     ksp(libs.hilt.compiler)

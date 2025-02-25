@@ -1,31 +1,33 @@
 package com.example.reposearch.ui.search
 
-import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.getValue
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.reposearch.R
 import com.example.reposearch.repository.model.Repo
 import com.example.reposearch.ui.search.composable.RepoCard
-import com.example.reposearch.ui.theme.RepoSearchTheme
-import java.time.LocalDateTime
+import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(
@@ -33,33 +35,36 @@ fun SearchScreen(
     onRepoClicked: (Repo) -> Unit
 ) {
     val searchText = viewModel.queryText
-    val screenState by viewModel.screenState.collectAsStateWithLifecycle()
+    val repoList: LazyPagingItems<Repo> = viewModel.repoList.collectAsLazyPagingItems()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     SearchScreenBody(
-        screenState = screenState,
+        repoList = repoList,
         searchText = searchText.value,
+        snackbarHostState = snackbarHostState,
         onSearchTextChange = viewModel::setQueryText,
         onSearch = viewModel::searchRepository,
         onRepoClicked = onRepoClicked
     )
-
-    if (screenState is ScreenState.Loading) {
-        Dialog(onDismissRequest = {}) {
-            CircularProgressIndicator()
-        }
-    }
 }
 
 @Composable
 private fun SearchScreenBody(
-    screenState: ScreenState<List<Repo>>,
+    repoList: LazyPagingItems<Repo>,
     searchText: String,
+    snackbarHostState: SnackbarHostState,
     onSearchTextChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     onRepoClicked: (Repo) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Scaffold {
+    val scope = rememberCoroutineScope()
+
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) {
         Column(
             modifier = modifier
                 .padding(it)
@@ -81,62 +86,58 @@ private fun SearchScreenBody(
                 Text(stringResource(R.string.screen_search_search_button_text))
             }
 
-            when (screenState) {
-                is ScreenState.Error -> {
-                    Text(screenState.message)
-                }
 
-                is ScreenState.Success -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(
-                            items = screenState.value,
-                            key = { it.id }
-                        ) {
-                            RepoCard(
-                                name = it.name,
-                                description = it.description ?: "-",
-                                stargazersCount = it.stargazersCount,
-                                updatedAt = it.updatedAt,
-                                onItemClicked = {
-                                    onRepoClicked(it)
-                                }
-                            )
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(
+                    count = repoList.itemCount,
+                    key = { index ->
+                        repoList[index]?.id ?: 0
+
+                    }) { index ->
+                    val repo = repoList[index]
+                    repo?.let {
+                        RepoCard(
+                            name = it.name,
+                            description = it.description ?: "-",
+                            stargazersCount = it.stargazersCount,
+                            updatedAt = it.updatedAt,
+                            onItemClicked = {
+                                onRepoClicked(it)
+                            }
+                        )
+                    }
+                }
+                when {
+                    repoList.loadState.refresh is LoadState.Error -> {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Something bad happened")
+                        }
+                    }
+
+                    repoList.loadState.refresh is LoadState.Loading -> {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    }
+
+                    repoList.loadState.append is LoadState.Loading -> {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
                         }
                     }
                 }
-
-                else -> {
-                    /* no-op */
-                }
             }
         }
-
-    }
-}
-
-@Preview(showBackground = true)
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun SearchScreenPreview() {
-    RepoSearchTheme {
-        SearchScreenBody(
-            searchText = "",
-            onSearchTextChange = {},
-            screenState = ScreenState.Success(
-                List(10) {
-                    Repo(
-                        id = it,
-                        name = "testname_$it",
-                        description = "test desc",
-                        updatedAt = LocalDateTime.of(2023, 1, 1, 1, 1),
-                        stargazersCount = 2,
-                    )
-                }
-            ),
-            onSearch = {},
-            onRepoClicked = {}
-        )
     }
 }

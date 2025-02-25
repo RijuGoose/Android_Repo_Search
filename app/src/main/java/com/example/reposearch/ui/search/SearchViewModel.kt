@@ -3,11 +3,14 @@ package com.example.reposearch.ui.search
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.example.reposearch.repository.RepoSearchRepository
 import com.example.reposearch.repository.model.Repo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,19 +21,22 @@ class SearchViewModel @Inject constructor(
     var queryText = mutableStateOf("")
         private set
 
-    private val mutableScreenState = MutableStateFlow<ScreenState<List<Repo>>>(ScreenState.Success(emptyList()))
-    val screenState = mutableScreenState.asStateFlow()
+    private val mutableRepoList: MutableStateFlow<PagingData<Repo>> =
+        MutableStateFlow(PagingData.empty())
+    val repoList = mutableRepoList.asStateFlow()
 
     fun searchRepository(query: String) {
-        mutableScreenState.value = ScreenState.Loading
-        viewModelScope.launch {
-            try {
-                val result = repoSearchRepository.searchRepository(query)?.items ?: emptyList()
-                mutableScreenState.value = ScreenState.Success(result)
+        collectSearch(query)
+    }
 
-            } catch (ex: Exception) {
-                mutableScreenState.value = ScreenState.Error("Something bad happened: ${ex.message}")
-            }
+    private fun collectSearch(query: String) {
+        viewModelScope.launch {
+            repoSearchRepository.searchRepository(query)
+                .distinctUntilChanged()
+                .cachedIn(viewModelScope)
+                .collect {
+                    mutableRepoList.value = it
+                }
         }
     }
 

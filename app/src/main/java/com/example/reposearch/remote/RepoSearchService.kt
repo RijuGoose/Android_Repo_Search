@@ -9,7 +9,7 @@ import retrofit2.http.Query
 
 interface RepoSearchService {
     @GET("search/repositories")
-    suspend fun searchRepository(@Query("q") query: String): Response<RepoResultResponse>
+    suspend fun searchRepository(@Query("q") query: String, @Query("page") page: Int): Response<RepoResultResponse>
 
     @GET("repositories/{id}")
     suspend fun getRepository(@Path("id") id: Int): Response<DetailedRepoResponse>
