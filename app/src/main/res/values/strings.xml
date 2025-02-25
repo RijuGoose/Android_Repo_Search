@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">RepoSearch</string>
+    <string name="screen_details_topbar_title">Repo Details</string>
+    <string name="common_back">Back</string>
+    <string name="screen_details_created_at">Created at</string>
+    <string name="screen_details_updated_at">Updated At</string>
+    <string name="screen_details_forks">Forks</string>
+    <string name="icon_description_stars">Stars</string>
+    <string name="screen_search_search_textfield_placeholder">Type to search</string>
+    <string name="screen_search_search_button_text">Search</string>
+</resources>
