@@ -23,14 +23,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -39,7 +35,7 @@ import com.example.reposearch.extensions.toPrettyString
 import com.example.reposearch.repository.model.DetailedRepo
 import com.example.reposearch.repository.model.RepoOwner
 import com.example.reposearch.ui.common.HyperlinkText
-import com.example.reposearch.ui.search.ScreenState
+import com.example.reposearch.ui.common.ScreenState
 import com.example.reposearch.ui.theme.RepoSearchTheme
 import java.time.LocalDateTime
 

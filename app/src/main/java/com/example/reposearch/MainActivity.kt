@@ -11,6 +11,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.reposearch.ui.details.DetailsScreen
 import com.example.reposearch.ui.details.DetailsViewModel
+import com.example.reposearch.ui.login.LoginScreen
+import com.example.reposearch.ui.login.LoginViewModel
 import com.example.reposearch.ui.search.SearchScreen
 import com.example.reposearch.ui.search.SearchViewModel
 import com.example.reposearch.ui.theme.RepoSearchTheme
@@ -26,11 +28,24 @@ class MainActivity : ComponentActivity() {
                 val navHostController = rememberNavController()
                 NavHost(
                     navController = navHostController,
-                    startDestination = Screen.Search
+                    startDestination = Screen.Login
                 ) {
+                    composable<Screen.Login> {
+                        val viewModel: LoginViewModel = hiltViewModel()
+                        LoginScreen(
+                            viewModel,
+                            onLoginSuccess = {
+                                navHostController.navigate(Screen.Search) {
+                                    popUpTo(Screen.Login) {
+                                        inclusive = true
+                                    }
+                                }
+                            })
+                    }
                     composable<Screen.Search> {
                         val viewModel: SearchViewModel = hiltViewModel()
-                        SearchScreen(viewModel = viewModel,
+                        SearchScreen(
+                            viewModel = viewModel,
                             onRepoClicked = {
                                 navHostController.navigate(Screen.Details(it.id))
                             })
@@ -44,7 +59,8 @@ class MainActivity : ComponentActivity() {
                         }
                     ) {
                         val viewModel: DetailsViewModel = hiltViewModel()
-                        DetailsScreen(viewModel,
+                        DetailsScreen(
+                            viewModel,
                             onBack = {
                                 navHostController.navigateUp()
                             })

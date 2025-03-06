@@ -7,7 +7,7 @@ import androidx.navigation.toRoute
 import com.example.reposearch.Screen
 import com.example.reposearch.repository.RepoSearchRepository
 import com.example.reposearch.repository.model.DetailedRepo
-import com.example.reposearch.ui.search.ScreenState
+import com.example.reposearch.ui.common.ScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

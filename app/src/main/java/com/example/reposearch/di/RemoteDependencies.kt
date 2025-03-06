@@ -1,6 +1,9 @@
 package com.example.reposearch.di
 
+import com.example.reposearch.remote.AccountService
+import com.example.reposearch.remote.AccountServiceImpl
 import com.example.reposearch.remote.RepoSearchService
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,6 +17,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RemoteDependencies {
+
+    @Binds
+    abstract fun provideAccountService(impl: AccountServiceImpl): AccountService
+
     companion object {
         @Provides
         @Singleton

@@ -44,10 +44,3 @@ class SearchViewModel @Inject constructor(
         queryText.value = text
     }
 }
-
-sealed class ScreenState<out T : Any> {
-    object Loading : ScreenState<Nothing>()
-    data class Success<out T : Any>(val value: T) : ScreenState<T>()
-    data class Error(val message: String) : ScreenState<Nothing>()
-
-}
