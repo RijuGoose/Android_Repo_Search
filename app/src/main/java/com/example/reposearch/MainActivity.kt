@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope.*
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleOut
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,7 +32,14 @@ class MainActivity : ComponentActivity() {
                     navController = navHostController,
                     startDestination = Screen.Login
                 ) {
-                    composable<Screen.Login> {
+                    composable<Screen.Login>(
+                        exitTransition = {
+                            scaleOut(
+                                targetScale = 2f,
+                                animationSpec = tween(1000)
+                            )
+                        }
+                    ) {
                         val viewModel: LoginViewModel = hiltViewModel()
                         LoginScreen(
                             viewModel,
@@ -42,7 +51,14 @@ class MainActivity : ComponentActivity() {
                                 }
                             })
                     }
-                    composable<Screen.Search> {
+                    composable<Screen.Search>(
+                        popEnterTransition = {
+                            slideIntoContainer(SlideDirection.Right)
+                        },
+                        exitTransition = {
+                            slideOutOfContainer(SlideDirection.Left)
+                        }
+                    ) {
                         val viewModel: SearchViewModel = hiltViewModel()
                         SearchScreen(
                             viewModel = viewModel,

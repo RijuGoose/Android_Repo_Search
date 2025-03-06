@@ -3,12 +3,18 @@ package com.example.reposearch.ui.search.composable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
@@ -26,7 +32,7 @@ import androidx.paging.compose.LazyPagingItems
 import com.example.reposearch.R
 import com.example.reposearch.repository.model.Repo
 import kotlinx.coroutines.launch
-
+import androidx.compose.material3.Icon
 
 @Composable
 fun SearchScreenBody(
@@ -44,28 +50,40 @@ fun SearchScreenBody(
             .padding(horizontal = 12.dp)
             .fillMaxSize()
     ) {
-        OutlinedTextField(
-            value = searchText,
-            onValueChange = onSearchTextChange,
-            placeholder = { Text(stringResource(R.string.screen_search_search_textfield_placeholder)) },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    onSearch(searchText)
-                }
-            )
-        )
-        Button(
-            onClick = {
-                onSearch(searchText)
-            },
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min)
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(stringResource(R.string.screen_search_search_button_text))
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = onSearchTextChange,
+                placeholder = { Text(stringResource(R.string.screen_search_search_textfield_placeholder)) },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        onSearch(searchText)
+                    }
+                )
+            )
+            Button(
+                onClick = {
+                    onSearch(searchText)
+                },
+                modifier = Modifier.fillMaxHeight(),
+                enabled = searchText.isNotBlank()
+            ) {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = stringResource(R.string.screen_search_search_button_text)
+                )
+            }
         }
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {

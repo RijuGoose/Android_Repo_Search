@@ -1,6 +1,9 @@
 package com.example.reposearch.ui.search
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -53,7 +56,20 @@ fun SearchScreen(
     ) {
         AnimatedContent(
             targetState = showFavs,
-            modifier = Modifier.padding(it)
+            modifier = Modifier.padding(it),
+            transitionSpec = {
+                if (targetState) {
+                    slideInHorizontally(initialOffsetX = { it }).togetherWith(
+                        slideOutHorizontally(
+                            targetOffsetX = { -it })
+                    )
+                } else {
+                    slideInHorizontally(initialOffsetX = { -it }).togetherWith(
+                        slideOutHorizontally(
+                            targetOffsetX = { it })
+                    )
+                }
+            }
         ) {
             if (it) {
                 FavScreenBody(

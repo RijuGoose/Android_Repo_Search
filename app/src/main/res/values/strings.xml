@@ -13,4 +13,6 @@
     <string name="screen_login_button_login">Login</string>
     <string name="screen_search_fab_search">Search</string>
     <string name="screen_search_fab_favourites">Favs</string>
+    <string name="screen_login_title">Repository search</string>
+    <string name="screen_fav_empty_text">There is literally nothing here. Add some favourites!</string>
 </resources>
