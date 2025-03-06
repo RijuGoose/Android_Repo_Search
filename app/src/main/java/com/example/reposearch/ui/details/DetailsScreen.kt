@@ -1,18 +1,13 @@
 package com.example.reposearch.ui.details
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ForkRight
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,41 +18,30 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.example.reposearch.R
-import com.example.reposearch.extensions.toPrettyString
 import com.example.reposearch.repository.model.DetailedRepo
 import com.example.reposearch.repository.model.RepoOwner
 import com.example.reposearch.ui.common.HyperlinkText
 import com.example.reposearch.ui.common.ScreenState
+import com.example.reposearch.ui.details.composable.CountDetails
+import com.example.reposearch.ui.details.composable.OwnerDetails
 import com.example.reposearch.ui.theme.RepoSearchTheme
 import java.time.LocalDateTime
+import com.example.reposearch.ui.details.composable.DateDetails
+import com.example.reposearch.ui.details.composable.FavouriteButton
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailsScreen(
     viewModel: DetailsViewModel,
     onBack: () -> Unit
 ) {
     val screenState by viewModel.screenState.collectAsStateWithLifecycle()
-
-    DetailsScreenBody(
-        screenState = screenState,
-        onBack = onBack
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DetailsScreenBody(
-    screenState: ScreenState<DetailedRepo>,
-    onBack: () -> Unit
-) {
+    val isRepoFavourite by viewModel.isRepoFavourite.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -73,101 +57,76 @@ private fun DetailsScreenBody(
                     }
                 }
             )
-        }
+        },
+        contentWindowInsets = WindowInsets.safeDrawing
     ) {
-        Column(
-            modifier = Modifier
-                .padding(it)
-                .padding(12.dp)
-        ) {
-            when (screenState) {
-                is ScreenState.Error -> {
-                    Text(screenState.message)
-                }
-
-                is ScreenState.Success -> {
-                    screenState.value.owner?.let {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            AsyncImage(
-                                model = screenState.value.owner.avatarUrl,
-                                modifier = Modifier
-                                    .size(64.dp)
-                                    .border(
-                                        border = BorderStroke(
-                                            width = 1.dp,
-                                            color = MaterialTheme.colorScheme.onBackground
-                                        ),
-                                        shape = CircleShape
-                                    )
-                                    .clip(CircleShape),
-                                contentDescription = null
-                            )
-                            Column {
-                                Text(
-                                    text = screenState.value.owner.login,
-                                    style = MaterialTheme.typography.headlineSmall
-                                )
-                                HyperlinkText(
-                                    hyperlink = screenState.value.owner.url,
-                                    text = screenState.value.owner.url,
-                                )
-                            }
-                        }
-                    }
-                    HyperlinkText(
-                        hyperlink = screenState.value.url,
-                        text = screenState.value.name,
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Text(screenState.value.description ?: "-")
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(stringResource(R.string.screen_details_created_at))
-                            Text(screenState.value.createdAt.toPrettyString())
-                        }
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(stringResource(R.string.screen_details_updated_at))
-                            Text(screenState.value.updatedAt.toPrettyString())
-                        }
-                    }
-                    Row {
-                        Icon(
-                            Icons.Default.ForkRight,
-                            contentDescription = stringResource(R.string.screen_details_forks)
-                        )
-                        Text(screenState.value.forksCount.toString())
-                    }
-                    Row {
-                        Icon(
-                            Icons.Default.Star,
-                            contentDescription = stringResource(R.string.icon_description_stars)
-                        )
-                        Text(screenState.value.stargazersCount.toString())
-                    }
-                }
-
-                else -> {
-                    /* no-op */
-                }
-            }
-
-        }
+        DetailsScreenBody(
+            screenState = screenState,
+            isRepoFavourite = isRepoFavourite,
+            addToFavourites = viewModel::addRepoToFavourites,
+            removeFromFavourites = viewModel::removeRepoFromFavourites,
+            modifier = Modifier.padding(it)
+        )
     }
 }
 
-@Preview(
-    showBackground = true
-)
+@Composable
+private fun DetailsScreenBody(
+    screenState: ScreenState<DetailedRepo>,
+    isRepoFavourite: Boolean,
+    addToFavourites: (DetailedRepo) -> Unit,
+    removeFromFavourites: (DetailedRepo) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.padding(12.dp)) {
+        when (screenState) {
+            is ScreenState.Error -> {
+                Text(screenState.message)
+            }
+
+            is ScreenState.Success -> {
+                OwnerDetails(screenState.value.owner)
+                HyperlinkText(
+                    hyperlink = screenState.value.url,
+                    text = screenState.value.name,
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Text(screenState.value.description ?: "-")
+                DateDetails(
+                    createdAt = screenState.value.createdAt,
+                    updatedAt = screenState.value.updatedAt
+                )
+                CountDetails(
+                    forksCount = screenState.value.forksCount,
+                    stargazersCount = screenState.value.stargazersCount
+                )
+
+                if (isRepoFavourite) {
+                    FavouriteButton(
+                        icon = Icons.Default.Favorite,
+                        onClick = {
+                            removeFromFavourites(screenState.value)
+                        }
+                    )
+                } else {
+                    FavouriteButton(
+                        icon = Icons.Default.FavoriteBorder,
+                        onClick = {
+                            addToFavourites(screenState.value)
+                        }
+                    )
+                }
+            }
+
+            else -> {
+                /* no-op */
+            }
+        }
+
+    }
+}
+
+@Preview(showBackground = true)
 @Composable
 private fun DetailsScreenPreview() {
     RepoSearchTheme {
@@ -189,7 +148,9 @@ private fun DetailsScreenPreview() {
                     forksCount = 132,
                 )
             ),
-            onBack = {}
+            addToFavourites = {},
+            removeFromFavourites = {},
+            isRepoFavourite = false
         )
     }
 }

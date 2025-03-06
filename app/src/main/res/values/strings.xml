@@ -8,4 +8,9 @@
     <string name="icon_description_stars">Stars</string>
     <string name="screen_search_search_textfield_placeholder">Type to search</string>
     <string name="screen_search_search_button_text">Search</string>
+    <string name="screen_login_textfield_username">Username</string>
+    <string name="screen_login_textfield_password">Password</string>
+    <string name="screen_login_button_login">Login</string>
+    <string name="screen_search_fab_search">Search</string>
+    <string name="screen_search_fab_favourites">Favs</string>
 </resources>
